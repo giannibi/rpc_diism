@@ -17,6 +17,10 @@ requirements:
     - python >=3.10
     - control
     - slycot
+    - matplotlib
+    - itertools
+    - numpy
+    - cvxpy
 
 about:
   summary: "Template library for rpc_diism"

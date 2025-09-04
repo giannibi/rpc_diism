@@ -8,6 +8,10 @@ setup(
     packages=find_packages(),
     install_requires=[
         "control",
+        "matplotlib",
+        "itertools",
+        "numpy",
+        "cvxpy",
         "slycot"
     ],
     python_requires=">=3.10",
