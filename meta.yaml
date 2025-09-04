@@ -1,0 +1,23 @@
+package:
+  name: rpc_diism
+  version: "0.1.0"
+
+source:
+  path: .
+
+build:
+  noarch: python
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed"
+
+requirements:
+  host:
+    - python >=3.7
+    - pip
+  run:
+    - python >=3.7
+    - control
+    - slycot
+
+about:
+  summary: "Template library for rpc_diism"
+  license: "MIT"
