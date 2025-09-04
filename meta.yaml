@@ -24,4 +24,4 @@ requirements:
 
 about:
   summary: "Template library for rpc_diism"
-  license: "MIT"
+  license: "GPL-3.0-or-later"
