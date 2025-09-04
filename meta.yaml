@@ -18,7 +18,6 @@ requirements:
     - control
     - slycot
     - matplotlib
-    - itertools
     - numpy
     - cvxpy
 

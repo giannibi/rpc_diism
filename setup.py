@@ -9,7 +9,6 @@ setup(
     install_requires=[
         "control",
         "matplotlib",
-        "itertools",
         "numpy",
         "cvxpy",
         "slycot"
