@@ -222,7 +222,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
 
             # K-step: compute controller for current scaling
             try: 
-                  kb, cl0, gamma, rcond = hinfsyn(DGDInv, f, f, 2*best_nubar)
+                  kb, cl0, gamma, rcond = hinfsyn(DGDInv, f, f, 1.5*best_nubar)
             except:
                   # Something went wrong: keep last controller
                   kb = k
