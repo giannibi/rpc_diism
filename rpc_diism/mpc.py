@@ -5,12 +5,6 @@ import control as ct
 import cvxpy as cp
 
 
-
-'''
-MPC
-'''
-
-
 def sampled_data_controller(controller, plant_dt): 
     '''
     Create a discrete-time system that models the behaviour 

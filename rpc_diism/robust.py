@@ -6,11 +6,6 @@ import control as ct
 import cvxpy as cp
 
 
-'''
-Robust Control
-'''
-
-
 def weightS(wb, M, e, n):
     '''
     Generate a typical sensitivity weight function
@@ -45,7 +40,7 @@ def weightU(wbc, M, e, n):
     return w
 
 
-def mysigma(g, w):
+def sigma(g, w):
     '''
     Custom function to compute singular values of a system given frequencies
     s = mysigma(g,w)
@@ -72,7 +67,7 @@ def invss(d):
     return ct.StateSpace(ainv, binv, cinv, dinv)
 
 
-def myhinfsyn(G, nmeas, ncon, initgamma=1e6):
+def hinfsyn(G, nmeas, ncon, initgamma=1e6):
     '''
     Modified version of H_{inf} control synthesis included in python control
 
