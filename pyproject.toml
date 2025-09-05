@@ -1,0 +1,20 @@
+[project]
+name = "rpc_diism"
+version = "0.1.0"
+description = "Python library for the Robust and Predictive Control course at DIISM, Unisi"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+    {name = "Gianni Bianchini"}
+]
+requires-python = ">=3.10"
+dependencies = [
+    "control",
+    "slycot",
+    "matplotlib",
+    "numpy",
+    "cvxpy"
+]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
