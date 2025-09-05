@@ -162,7 +162,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       gamma:   closed loop norm achieved by initial Hinf controller
       '''
       # Initial K-step: compute an initial optimal Hinf controller without D scaling
-      k, cl0, gamma, rcond = myhinfsyn(G, f, f, initgamma)
+      k, cl0, gamma, rcond = hinfsyn(G, f, f, initgamma)
       if verbose:
             print("Infinity norm of Tzw_delta with initial Hinfinity controller: ", gamma)
 
@@ -222,7 +222,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
 
             # K-step: compute controller for current scaling
             try: 
-                  kb, cl0, gamma, rcond = myhinfsyn(DGDInv, f, f, initgamma)
+                  kb, cl0, gamma, rcond = hinfsyn(DGDInv, f, f, initgamma)
             except:
                   # Something went wrong: keep last controller
                   kb = k
