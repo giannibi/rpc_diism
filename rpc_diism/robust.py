@@ -205,8 +205,8 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
                       order = order + 1
                   if verbose:
                       print("No better upper bound to mu norm of Tzw_delta found: trying D order ", order, "qutol ", qutol)
-                  #if i > 1:
-                  #      mubar = best_mubar
+                  if i > 1:
+                        mubar = best_mubar
             else:
                   # Found an improvement: save best upper bound so far and reset D order and qutol
                   best_nubar = curr_nubar
