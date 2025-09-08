@@ -7,14 +7,14 @@ import cvxpy as cp
 
 
 def weightS(wb, M, e, n):
-    '''
+    """
     Generate a typical sensitivity weight function
     We = weightS(wb,M,e)
     wb - design frequency (where |We| is approximately 1)
     M - high frequency gain of 1/We; should be > 1
     e - low frequency gain of 1/We; should be < 1
     n - order of the weight
-    '''
+    """
     s = ct.tf('s')
     w1 = (s/pow(M,(1/n)) + wb) / (s + wb*pow(e,1/n))
     w = ct.ss([],[],[],1)
@@ -24,14 +24,14 @@ def weightS(wb, M, e, n):
     
 
 def weightU(wbc, M, e, n):
-    '''
+    """
     Generate a typical input sensitivity weight function
     Wu = weightU(wbc,M,e)
     wbc - design frequency (where |Wu| is approximately 1)
     M - low frequency gain of 1/Wu; should be > 1
     e - high frequency gain of 1/Wu; should be < 1
     n - order of the weight
-    '''
+    """
     s = ct.tf('s')
     w1 = (s + wbc/pow(M,(1/n))) / (pow(e,1/n)*s + wbc)
     w = ct.ss([],[],[],1)
@@ -41,12 +41,12 @@ def weightU(wbc, M, e, n):
 
 
 def sigma(g, w):
-    '''
+    """
     Custom function to compute singular values of a system given frequencies
-    s = mysigma(g,w)
+    s = sigma(g,w)
     g - LTI object, order n
     w - frequencies, length m
-    '''
+    """
     m, p, _ = g.frequency_response(w)
     sjw = (m*np.exp(1j*p)).transpose(2, 0, 1)
     sv = np.linalg.svd(sjw, compute_uv=False)
@@ -54,10 +54,10 @@ def sigma(g, w):
 
 
 def invss(d):
-    '''
+    """
     Compute the inverse of a state space system with nonsingular D matrix
     Used to compute D^-1 in D-K iteration
-    '''
+    """
     assert d.D.shape[0] == d.D.shape[1], "D matrix must be square"
     assert np.linalg.matrix_rank(d.D) == d.D.shape[0], "D matrix must be nonsingular"
     dinv = np.linalg.inv(d.D)
@@ -68,7 +68,7 @@ def invss(d):
 
 
 def hinfsyn(G, nmeas, ncon, initgamma=1e6):
-    '''
+    """
     Modified version of H_{inf} control synthesis included in python control
 
     Parameters
@@ -88,7 +88,7 @@ def hinfsyn(G, nmeas, ncon, initgamma=1e6):
         2: measurement transformation matrix
         3: X-Riccati equation
         4: Y-Riccati equation
-    '''
+    """
     n = np.size(G.A, 0)
     m = np.size(G.B, 1)
     np_ = np.size(G.C, 0)
@@ -110,7 +110,7 @@ def hinfsyn(G, nmeas, ncon, initgamma=1e6):
 
 
 def mucomp(M, nblock, itype, omega):
-    '''
+    """
     Computation of the upper bound of the structured singular value of system M,
     given the uncertainty structure. Returns the upper bound as a function of frequency
     and its maximum over frequency (nubar)
@@ -122,8 +122,8 @@ def mucomp(M, nblock, itype, omega):
     itype:  must be 2 for all nblock entries
     omega:  frequency vector to evaluate mu upper bound
     mubar:  mu upper bound as a function of frequency
-    nubar: mu upper bound peak 
-    '''
+    nubar:  mu upper bound peak 
+    """
     mubar = []
     for w in omega:
         # Compute the upper bound to the structured singular value
@@ -135,7 +135,7 @@ def mucomp(M, nblock, itype, omega):
 
 
 def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamma=1e6, verbose=True):
-      '''
+      """
       Perform mu synthesis using D-K iteration
       
       K, best_nubar, init_mubar, best_mubar, gamma 
@@ -151,6 +151,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       reduce:  if > 0, do a model reduction on the closed loop at each iteration for the sake of computing 
                the scaling D; set it to something lower than the full order of cl0 if you run into numerical
                problems (may impact performance of the final controller)
+      initgamma: initial gamma for initial Hinf optimization
       verbose: print iteration info
       K:       controller
       best_nubar:
@@ -160,9 +161,12 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       best_mubar:
                achieved mu upper bound at the last iteration (as function of frequency)
       gamma:   closed loop norm achieved by initial Hinf controller
-      '''
+      """
       # Initial K-step: compute an initial optimal Hinf controller without D scaling
-      k, cl0, gamma, rcond = hinfsyn(G, f, f, initgamma)
+      try:
+            k, cl0, gamma, rcond = hinfsyn(G, f, f, initgamma)
+      except:
+            raise ValueError("Initial Hinf synthesis failed: try increasing initgamma")
       if verbose:
             print("Infinity norm of Tzw_delta with initial Hinfinity controller: ", gamma)
 
@@ -170,8 +174,10 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       # slightly higher than the achieved gamma without scaling
       best_nubar = gamma * 1.001
       i = 1
+      # Initialize scaling order and qutol
       order = minorder
-      qutol = 1
+      qutol = 2
+      # Iterate D-K steps
       while(True):
             if verbose:
                 print("Iteration #", i)
@@ -181,6 +187,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
             # for the sake of computing the scaling D. This may impact the performance of the final controller
             if reduce > 0:
                 cl0 = ct.balred(cl0, reduce, method='truncate')
+            # Call SLICOT routine to compute the scaling D of given order and the corresponding mubar
             _, _, _, _, _, _, D_A, D_B, D_C, D_D, mubar, _ = sly.sb10md(f, order, nblock, itype, qutol, cl0.A, cl0.B, cl0.C, cl0.D, omega)
             if i == 1:
                   # Save the mubar of the first iteration
@@ -188,22 +195,22 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
                   best_mubar = mubar
             # Get current value of the peak of mubar, i.e., the current upper bound
             # to the mu norm
-            sup_mubar = np.max(mubar)
-            if sup_mubar >= best_nubar:
+            curr_nubar = np.max(mubar)
+            if curr_nubar >= best_nubar:
+                  # No improvement in nubar: try diffrent values of D order and qutol
                   if qutol < 4:
-                      qutol = qutol +1
+                      qutol = qutol + 1
                   else:
-                      qutol = 1 
+                      qutol = 2 
                       order = order + 1
-                  # The current iteration did not improve nubar over the previous ones
                   if verbose:
                       print("No better upper bound to mu norm of Tzw_delta found: trying D order ", order, "qutol ", qutol)
-                  if i > 1:
-                        mubar = best_mubar
+                  #if i > 1:
+                  #      mubar = best_mubar
             else:
-                  # Save best upper bound so far
-                  best_nubar = sup_mubar
-                  qutol = 1
+                  # Found an improvement: save best upper bound so far and reset D order and qutol
+                  best_nubar = curr_nubar
+                  qutol = 2
                   order = minorder
                   if verbose:
                       print("Best upper bound to mu norm of Tzw_delta: ", best_nubar)
