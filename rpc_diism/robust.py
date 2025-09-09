@@ -47,11 +47,10 @@ def sigma(g, w):
     g - LTI object, order n
     w - frequencies, length m
     """
-    m, p, _ = g.frequency_response(w)
+    m, p, _ = g.frequency_response(w,squeeze=False)
     sjw = (m*np.exp(1j*p)).transpose(2, 0, 1)
     sv = np.linalg.svd(sjw, compute_uv=False)
     return sv
-
 
 def invss(d):
     """
