@@ -132,6 +132,26 @@ def mucomp(M, nblock, itype, omega):
     nubar = np.max(mubar)
     return mubar, nubar
 
+def d_step(T, f, order, nblock, itype, qutol, omega):
+    """
+    Performs the D-step in D-K iteration.
+    Computes the upper bound to mu of the given transfer function and the corresponding scaling
+    transfer function D. The returned scaling includes a fxf identity block at the end, so it
+    can be directly multiplied by G for the next K-step.
+
+    T:       Transfer function we want to compute mu upper bound for
+    f:       controller input-output dimension
+    nblock:  uncertainty structure (vector of sizes of uncertain blocks)
+    order:   minimum order of the scalings D(j*omega)
+    itype:   must be 2 for each entry of nblock, other values not implemented
+    omega:   frequency vector for D scaling computation
+    qutol:   tolerance for the scaling computation function
+    """
+    _, _, _, _, _, _, D_A, D_B, D_C, D_D, mubar, _ = sly.sb10md(f, order, nblock, itype, qutol, T.A, T.B, T.C, T.D, omega)
+    DInv = ct.StateSpace(D_A, D_B, D_C, D_D)
+    D = invss(DInv)
+    return mubar, D, DInv
+
 
 def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamma=1e6, verbose=True):
       """
@@ -186,8 +206,10 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
             # for the sake of computing the scaling D. This may impact the performance of the final controller
             if reduce > 0:
                 cl0 = ct.balred(cl0, reduce, method='truncate')
-            # Call SLICOT routine to compute the scaling D of given order and the corresponding mubar
-            _, _, _, _, _, _, D_A, D_B, D_C, D_D, mubar, _ = sly.sb10md(f, order, nblock, itype, qutol, cl0.A, cl0.B, cl0.C, cl0.D, omega)
+
+            # Perform the D-step computing the mu upper bound mubar and the correspoding scaling D
+            # and its inverse DInv
+            mubar, D, DInv = d_step(cl0, f, order, nblock, itype, qutol, omega)
             if i == 1:
                   # Save the mubar of the first iteration
                   initial_mubar = mubar
@@ -222,13 +244,12 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
             if i > maxiter:
                   break 
 
-            D = ct.StateSpace(D_A, D_B, D_C, D_D)
-            # Compute D*G*(inv(D))
-            DGDInv =  ct.minreal(D * G * invss(D), verbose = False)
+            # Compute DInv * G * D
+            DInvGD =  ct.minreal(DInv * G * D, verbose = False)
 
             # K-step: compute controller for current scaling
             try: 
-                  kb, cl0, gamma, rcond = hinfsyn(DGDInv, f, f, 1.1*best_nubar)
+                  kb, cl0, gamma, rcond = hinfsyn(DInvGD, f, f, 1.1*best_nubar)
             except:
                   # Something went wrong: keep last controller
                   kb = k
