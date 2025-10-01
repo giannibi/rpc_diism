@@ -153,7 +153,7 @@ def d_step(T, f, order, nblock, itype, qutol, omega):
     return mubar, D, DInv
 
 
-def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamma=1e6, verbose=True):
+def musyn(G, f, nblock, itype, omega, maxiter=10, maxorder=8, reduce=0, initgamma=1e6, verbose=True):
       """
       Perform mu synthesis using D-K iteration
       
@@ -166,7 +166,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       itype:   must be 2 for each entry of nblock, other values not implemented
       omega:   frequency vector for D scaling computation
       maxiter: max number of iterations
-      minorder:  minimum order of the scalings D(j*omega), increase it to try to get more accurate results (unlikely)
+      maxorder:  maximum order of the scalings D(j*omega), increase it to try to get more accurate results (unlikely)
       reduce:  if > 0, do a model reduction on the closed loop at each iteration for the sake of computing 
                the scaling D; set it to something lower than the full order of cl0 if you run into numerical
                problems (may impact performance of the final controller)
@@ -194,8 +194,8 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
       best_nubar = gamma * 1.001
       i = 1
       # Initialize scaling order and qutol
-      order = minorder
-      qutol = 1
+      order = 4
+      qutol = 1.0
       # Iterate D-K steps
       while(True):
             if verbose:
@@ -219,11 +219,11 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
             curr_nubar = np.max(mubar)
             if curr_nubar >= best_nubar:
                   # No improvement in nubar: try diffrent values of D order and qutol
-                  if qutol < 4:
-                      qutol = qutol + 1
-                  else:
-                      qutol = 1
+                  if order < maxorder:
                       order = order + 1
+                  else:
+                      order = 4
+                      qutol = qutol + 1.0
                   if verbose:
                       print("No better upper bound to mu norm of Tzw_delta found: trying D order ", order, "qutol ", qutol)
                   if i > 1:
@@ -231,8 +231,8 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, minorder=4, reduce=0, initgamm
             else:
                   # Found an improvement: save best upper bound so far and reset D order and qutol
                   best_nubar = curr_nubar
-                  qutol = 1
-                  order = minorder
+                  qutol = 0.5
+                  order = 4
                   if verbose:
                       print("Best upper bound to mu norm of Tzw_delta: ", best_nubar)
                   # And the best mubar
