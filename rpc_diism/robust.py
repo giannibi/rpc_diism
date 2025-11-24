@@ -282,7 +282,7 @@ def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4):
 
       dk_iter = dkpy.DkIterFixedOrder(
         controller_synthesis=dkpy.HinfSynSlicot(),
-        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=1),
+        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4),
         d_scale_fit=dkpy.DScaleFitSlicot(),
         n_iterations = numiter,
         fit_order=order,
