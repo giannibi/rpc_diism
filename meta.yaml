@@ -1,6 +1,6 @@
 package:
   name: rpc_diism
-  version: "0.2.0"
+  version: "0.3.0"
 
 source:
   path: .
@@ -20,6 +20,7 @@ requirements:
     - matplotlib
     - numpy
     - cvxpy
+    - dkpy
 
 about:
   summary: "Template library for rpc_diism"

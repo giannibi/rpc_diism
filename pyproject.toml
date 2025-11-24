@@ -1,6 +1,6 @@
 [project]
 name = "rpc_diism"
-version = "0.2.0"
+version = "0.3.0"
 license = "GPL-3.0-or-later"
 description = "Python library for the Robust and Predictive Control course at DIISM, Unisi"
 authors = [
@@ -12,6 +12,7 @@ dependencies = [
     "slycot",
     "matplotlib",
     "numpy",
+    "dkpy",
     "cvxpy"
 ]
 

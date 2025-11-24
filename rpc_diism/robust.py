@@ -4,6 +4,7 @@ import slycot as sly
 import numpy as np
 import control as ct
 import cvxpy as cp
+import dkpy
 
 
 def weightS(wb, M, e, n):
@@ -256,3 +257,39 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, maxorder=8, reduce=0, initgamm
 
       return k, best_nubar, initial_mubar, best_mubar, gamma
 
+def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4):
+      """
+      Perform mu synthesis using D-K iteration
+      
+      K, best_nubar, init_mubar, best_mubar, gamma 
+               = musyn(G, f, nblock, itype, omega, maxiter=10, qutol=2, order=4, reduce=0, verbose=True)
+               
+      G:       LFT form of the system from [w_delta,u] to [z_delta,y]
+      ny, nu:  controller input-output dimension
+      structure:  uncertainty structure (vector of sizes of uncertain blocks)
+      omega:   frequency vector for D scaling computation
+      numiter: number of iterations
+      order:   order of the scalings D(j*omega), increase it to try to get more accurate results (unlikely)
+      K:       controller
+      best_nubar:
+               best achieved upper bound to mu norm of Tzw_delta (best achieved nubar) 
+      init_mubar:
+               mu upper bound at the first iteration (as function of frequency)
+      best_mubar:
+               achieved mu upper bound at the last iteration (as function of frequency)
+      gamma:   closed loop norm achieved by initial Hinf controller
+      """
+
+      dk_iter = dkpy.DkIterFixedOrder(
+        controller_synthesis=dkpy.HinfSynSlicot(),
+        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=1),
+        d_scale_fit=dkpy.DScaleFitSlicot(),
+        n_iterations = numiter,
+        fit_order=order,
+      )
+
+
+      # Synthesize a controller
+      K, N, best_nubar, iter_results, info = dk_iter.synthesize(G, ny, nu, omega, structure)
+
+      return K, best_nubar, iter_results
