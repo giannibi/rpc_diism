@@ -133,6 +133,26 @@ def mucomp(M, nblock, itype, omega):
     nubar = np.max(mubar)
     return mubar, nubar
 
+def mucomp_dkpy(M, structure, omega):
+    """
+    Computation of the upper bound of the structured singular value of system M,
+    given the uncertainty structure. Returns the upper bound as a function of frequency
+    and its maximum over frequency (nubar)
+
+    mubar, nubar = mucom_dkpy(M, structure, omega)
+
+    M:      LFT representation of the system "seen" from the uncertain block, i.e., from w_delta to z_delta
+    structure: uncertainty structure (list of sizes of uncertain blocks)
+    omega:  frequency vector to evaluate mu upper bound
+    mubar:  mu upper bound as a function of frequency
+    nubar:  mu upper bound peak 
+    """
+    M_jomega = M(1j * omega)
+    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None).compute_ssv(M_jomega, structure)
+    nubar = np.max(mubar)
+    return mubar, nubar
+
+
 def d_step(T, f, order, nblock, itype, qutol, omega):
     """
     Performs the D-step in D-K iteration.
