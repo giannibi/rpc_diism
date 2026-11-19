@@ -148,7 +148,7 @@ def mucomp_dkpy(M, structure, omega):
     nubar:  mu upper bound peak 
     """
     M_jomega = M(1j * omega)
-    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None, solver='MOSEK').compute_ssv(M_jomega, structure)
+    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None, solver_params={"solver": "MOSEK"}).compute_ssv(M_jomega, structure)
     nubar = np.max(mubar)
     return mubar, nubar
 
