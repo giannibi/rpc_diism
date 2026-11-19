@@ -148,7 +148,7 @@ def mucomp_dkpy(M, structure, omega):
     nubar:  mu upper bound peak 
     """
     M_jomega = M(1j * omega)
-    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None, lmi_solver='cvxpy', lmi_cvxpy_solver='MOSEK').compute_ssv(M_jomega, structure)
+    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None, solver='MOSEK').compute_ssv(M_jomega, structure)
     nubar = np.max(mubar)
     return mubar, nubar
 
@@ -301,15 +301,13 @@ def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4, hinfmethod='slic
       gamma:   closed loop norm achieved by initial Hinf controller
       """
       if hinfmethod == 'lmi':
-        hinf_synth = dkpy.HinfSynLmi(lmi_strictness=1e-8,
-                                      lmi_solver='cvxpy',
-                                      lmi_cvxpy_solver='MOSEK')
+        hinf_synth = dkpy.HinfSynLmi(lmi_strictness=1e-8, solver='MOSEK')
       else:
         hinf_synth = dkpy.HinfSynSlicot()
   
       dk_iter = dkpy.DkIterFixedOrder(
         controller_synthesis=hinf_synth,
-        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4),
+        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4, solver='MOSEK'),
         d_scale_fit=dkpy.DScaleFitSlicot(),
         n_iterations = numiter,
         fit_order=order,
