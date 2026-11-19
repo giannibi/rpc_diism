@@ -1,6 +1,6 @@
 package:
   name: rpc_diism
-  version: "0.3.3"
+  version: "0.3.5"
 
 source:
   path: .

@@ -301,13 +301,13 @@ def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4, hinfmethod='slic
       gamma:   closed loop norm achieved by initial Hinf controller
       """
       if hinfmethod == 'lmi':
-        hinf_synth = dkpy.HinfSynLmi(lmi_strictness=1e-8, solver='MOSEK')
+        hinf_synth = dkpy.HinfSynLmi(lmi_strictness=1e-8, solver_params={"solver": "MOSEK"})
       else:
         hinf_synth = dkpy.HinfSynSlicot()
   
       dk_iter = dkpy.DkIterFixedOrder(
         controller_synthesis=hinf_synth,
-        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4, solver='MOSEK'),
+        structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4, solver_params={"solver": "MOSEK"}),
         d_scale_fit=dkpy.DScaleFitSlicot(),
         n_iterations = numiter,
         fit_order=order,
