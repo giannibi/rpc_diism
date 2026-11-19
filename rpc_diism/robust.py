@@ -148,7 +148,7 @@ def mucomp_dkpy(M, structure, omega):
     nubar:  mu upper bound peak 
     """
     M_jomega = M(1j * omega)
-    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None).compute_ssv(M_jomega, structure)
+    mubar,_,_,_ = dkpy.SsvLmiBisection(n_jobs=None, lmi_solver='cvxpy', lmi_cvxpy_solver='MOSEK').compute_ssv(M_jomega, structure)
     nubar = np.max(mubar)
     return mubar, nubar
 
@@ -277,7 +277,7 @@ def musyn(G, f, nblock, itype, omega, maxiter=10, maxorder=8, reduce=0, initgamm
 
       return k, best_nubar, initial_mubar, best_mubar, gamma
 
-def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4):
+def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4, hinfmethod='slicot'):
       """
       Perform mu synthesis using D-K iteration
       
@@ -289,6 +289,7 @@ def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4):
       structure:  uncertainty structure (vector of sizes of uncertain blocks)
       omega:   frequency vector for D scaling computation
       numiter: number of iterations
+      hinfmethod: 'slicot' or 'lmi', method to use for Hinf synthesis
       order:   order of the scalings D(j*omega), increase it to try to get more accurate results (unlikely)
       K:       controller
       best_nubar:
@@ -299,9 +300,15 @@ def musyn_dkpy(G, ny, nu, structure, omega, numiter=3, order=4):
                achieved mu upper bound at the last iteration (as function of frequency)
       gamma:   closed loop norm achieved by initial Hinf controller
       """
-
+      if hinfmethod == 'lmi':
+        hinf_synth = dkpy.HinfSynLmi(lmi_strictness=1e-8,
+                                      lmi_solver='cvxpy',
+                                      lmi_cvxpy_solver='MOSEK')
+      else:
+        hinf_synth = dkpy.HinfSynSlicot()
+  
       dk_iter = dkpy.DkIterFixedOrder(
-        controller_synthesis=dkpy.HinfSynSlicot(),
+        controller_synthesis=hinf_synth,
         structured_singular_value=dkpy.SsvLmiBisection(n_jobs=4),
         d_scale_fit=dkpy.DScaleFitSlicot(),
         n_iterations = numiter,
